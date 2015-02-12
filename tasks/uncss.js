@@ -7,12 +7,11 @@
  */
 
 'use strict';
+var uncss  = require( 'uncss' ),
+    chalk  = require( 'chalk' ),
+    maxmin = require( 'maxmin' );
 
 module.exports = function ( grunt ) {
-    var uncss  = require( 'uncss' ),
-        chalk  = require( 'chalk' ),
-        maxmin = require( 'maxmin' );
-
     grunt.registerMultiTask( 'uncss', 'Remove unused CSS', function () {
 
         var done    = this.async(),
@@ -22,8 +21,9 @@ module.exports = function ( grunt ) {
 
         options.urls = options.urls || [];
 
-        this.files.forEach(function ( f ) {
-            var src = f.src.filter(function ( filepath ) {
+        this.files.forEach(function ( file ) {
+
+            var src = file.src.filter(function ( filepath ) {
                 // Warn on and remove invalid source files (if nonull was set).
                 if ( !grunt.file.exists( filepath ) ) {
                     grunt.log.warn( 'Source file ' + chalk.cyan( filepath ) + ' not found.' );
@@ -33,16 +33,9 @@ module.exports = function ( grunt ) {
                 }
             });
 
-            if ( src.length === 0 && f.orig.src.length === 0 ) {
-                grunt.fail.warn( 'Destination (' + f.dest + ') not written because src files were empty.' );
+            if ( src.length === 0 && file.orig.src.length === 0 ) {
+                grunt.fail.warn( 'Destination (' + file.dest + ') not written because src files were empty.' );
             }
-
-            f.orig.src.forEach(function (source) {
-                if (/^https?/.test(source)) {
-                    src.push(source);
-                    options.urls.push(source);
-                }
-            });
 
             try {
                 uncss( src, options, function ( error, output, report ) {
@@ -50,9 +43,8 @@ module.exports = function ( grunt ) {
                         throw error;
                     }
 
-                    grunt.file.write( f.dest, output );
-
-                    grunt.log.writeln('File ' + chalk.cyan( f.dest ) + ' created: ' + maxmin( report.original, output, options.report === 'gzip' ) );
+                    grunt.file.write( file.dest, output );
+                    grunt.log.writeln('File ' + chalk.cyan( file.dest ) + ' created: ' + maxmin( report.original, output, options.report === 'gzip' ) );
 
                     done();
                 });
@@ -65,6 +57,8 @@ module.exports = function ( grunt ) {
                 grunt.log.warn( 'Uncssing source "' + src + '" failed.' );
                 grunt.fail.warn( err );
             }
+
+
         });
 
     });
