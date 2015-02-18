@@ -43,8 +43,11 @@ module.exports = function ( grunt ) {
                         throw error;
                     }
 
+                    // Why `report` is `undefined` when `.uncssrc` is used???
+                    console.log('report.original.length', report.original.length);
+                    var max = report && report.original !== 'undefined' ? report.original : '';
                     grunt.file.write( file.dest, output );
-                    grunt.log.writeln('File ' + chalk.cyan( file.dest ) + ' created: ' + maxmin( report.original, output, options.report === 'gzip' ) );
+                    grunt.log.writeln('File ' + chalk.cyan( file.dest ) + ' created: ' + maxmin( max, output, options.report === 'gzip' ) );
 
                     done();
                 });
